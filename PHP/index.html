@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests">
+    <meta http-equiv="Referrer-Policy" content="no-referrer">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Permissions-Policy" content="accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()">
+    <title>Ejercicio 1 - PHP CLI</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg-start: #fff6e8;
+            --bg-end: #e3f0ff;
+            --ink: #102a43;
+            --muted: #52606d;
+            --accent: #b45309;
+            --panel: rgba(255, 255, 255, 0.94);
+            --border: rgba(16, 42, 67, 0.12);
+            --shadow: 0 24px 60px rgba(16, 42, 67, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(180, 83, 9, 0.18), transparent 28%),
+                linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        }
+
+        main {
+            width: min(920px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 48px 0 64px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            line-height: 1;
+        }
+
+        p, li {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        pre {
+            overflow-x: auto;
+            padding: 16px;
+            border-radius: 16px;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+
+        code {
+            font-family: Consolas, "Courier New", monospace;
+        }
+
+        a {
+            color: var(--accent);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="card">
+            <p class="eyebrow">Ejercicio 1</p>
+            <h1>Fibonacci en PHP CLI</h1>
+            <p>
+                Este ejercicio está implementado como aplicación de línea de comandos en
+                <code>PHP/fibonacci.php</code>, con clases, interfaces y separación por responsabilidades.
+            </p>
+
+            <p>
+                Además del formato real <code>Y-m-d H:i:s</code>, admite un modo de prueba extrema con
+                <code>ts:&lt;bigint&gt;</code> para timestamps sintéticos gigantes. No tienen por qué corresponder
+                a fechas físicamente posibles; sirven para comprobar el comportamiento con enteros arbitrarios.
+            </p>
+
+            <p>Comandos de comprobación:</p>
+
+            <pre><code>php PHP/fibonacci.php "2026-06-01 00:00:00" "2026-06-30 23:59:59"</code></pre>
+
+            <pre><code>docker compose run --rm php-cli php PHP/fibonacci.php "2026-06-01 00:00:00" "2026-06-30 23:59:59"</code></pre>
+
+            <pre><code>php PHP/fibonacci.php "ts:123456789012345678901234567890" "ts:123456789012345678901234568500"</code></pre>
+
+            <p>Qué calcula:</p>
+            <ul>
+                <li>Timestamps Fibonacci entre el inicio y fin del mes actual.</li>
+                <li>Timestamps Fibonacci entre el inicio y fin del año actual.</li>
+                <li>Timestamps Fibonacci entre dos fechas personalizadas en formato <code>Y-m-d H:i:s</code> y UTC.</li>
+                <li>Timestamps Fibonacci entre dos límites sintéticos enormes usando <code>ts:&lt;bigint&gt;</code>.</li>
+            </ul>
+
+            <p>
+                Puedes volver a la portada desde <a href="/index.html">el índice principal</a>.
+            </p>
+        </section>
+    </main>
+</body>
+</html>
