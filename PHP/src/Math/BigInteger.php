@@ -22,7 +22,8 @@ final class BigInteger
 
     public static function fromString(string $value): self
     {
-        if (!preg_match('/^[+-]?\d+$/', $value)) {
+        if (strlen($value) > 257 || !preg_match('/^[+-]?\d+$/D', $value)
+            || strlen(ltrim($value, '+-')) > 256) {
             throw new InvalidArgumentException(sprintf('Invalid integer value "%s".', $value));
         }
 
@@ -119,7 +120,7 @@ final class BigInteger
             return $lengthComparison;
         }
 
-        return $left <=> $right;
+        return strcmp($left, $right);
     }
 
     private static function addAbsolute(string $left, string $right): string

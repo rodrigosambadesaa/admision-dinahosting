@@ -7,11 +7,25 @@ Solución completa de los tres ejercicios del PDF:
 - `CSS/`: formulario de login en HTML5 + Bootstrap sin JavaScript.
 - `compose.yaml`: dockerización para facilitar la comprobación de la solución implementada.
 
-La portada [index.html](/C:/Users/rodri/OneDrive/Documentos/GitHub/admision_dinahosting/index.html) enlaza ya a los tres ejercicios, incluido [PHP/index.html](/C:/Users/rodri/OneDrive/Documentos/GitHub/admision_dinahosting/PHP/index.html) como acceso rápido a la solución CLI del ejercicio 1.
+La portada [index.html](index.html) enlaza ya a los tres ejercicios, incluido [PHP/index.html](PHP/index.html) como acceso rápido a la solución CLI del ejercicio 1.
 
 En ambos ejercicios de Fibonacci (`PHP` y `JAVASCRIPT`) el rango personalizado se normaliza automáticamente: funciona igual si la primera fecha es anterior, igual o posterior a la segunda.
 Además, ambos soportan un modo de pruebas extremas con `ts:<bigint>` para trabajar con timestamps sintéticos arbitrariamente grandes. No hace falta que representen fechas reales ni físicamente plausibles; precisamente sirven para probar límites muy por encima de los enteros nativos e incluso de escalas mayores que la edad teórica del universo.
 En `JAVASCRIPT` esos valores se procesan con una implementación propia de `BigInteger`, sin depender de `BigInt` nativo.
+
+## Pruebas automatizadas
+
+El workflow **Functional tests and web smoke** ejecuta pruebas funcionales de PHP (8.3, 8.4 y 8.5), JavaScript (Node 22 y 24), validación estática de HTML y una prueba HTTP real de Nginx. La comprobación de la versión de PHP sigue separada en **PHP critical runtime security**.
+
+Ejecutar localmente sin instalar dependencias de terceros:
+
+```bash
+php tests/php_test.php
+node --test tests/javascript.test.cjs
+python3 -m unittest discover -s tests -p 'test_*.py'
+```
+
+En ambas implementaciones, los valores sintéticos aceptan hasta **256 dígitos**; se conserva la precisión arbitraria para cálculos mayores que los enteros nativos, con un límite práctico de entrada para evitar denegación de servicio. El formulario HTML/CSS es solo una demostración sin backend: **no utilice credenciales reales** y no espere autenticación al enviarlo.
 
 ## Seguridad
 
@@ -89,7 +103,7 @@ En este modo:
 
 ### JavaScript
 
-Abre [JAVASCRIPT/index.html](/C:/Users/rodri/OneDrive/Documentos/GitHub/admision_dinahosting/JAVASCRIPT/index.html) en navegador o usa Docker.
+Abre [JAVASCRIPT/index.html](JAVASCRIPT/index.html) en navegador o usa Docker.
 
 En el formulario puedes introducir:
 
@@ -98,4 +112,4 @@ En el formulario puedes introducir:
 
 ### CSS
 
-Abre [CSS/index.html](/C:/Users/rodri/OneDrive/Documentos/GitHub/admision_dinahosting/CSS/index.html) en navegador o usa Docker.
+Abre [CSS/index.html](CSS/index.html) en navegador o usa Docker.

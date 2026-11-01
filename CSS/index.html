@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'none'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action https://dinahosting.com; frame-ancestors 'none'; upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'none'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
     <meta http-equiv="Referrer-Policy" content="no-referrer">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
@@ -24,7 +24,8 @@
                     <h1 class="login-title">Inicia sesión</h1>
                     <p class="login-copy">Formulario HTML5 sin JavaScript con validación nativa y estilos apoyados en Bootstrap.</p>
 
-                    <form action="https://dinahosting.com/login-usuarios" method="POST" class="needs-validation" accept-charset="UTF-8" autocomplete="on">
+                    <p class="form-text" role="note">Demostración sin autenticación: utilice datos ficticios. Este formulario no valida cuentas reales.</p>
+                    <form action="/CSS/index.html" method="POST" class="needs-validation" accept-charset="UTF-8" autocomplete="off">
                         <div class="mb-3">
                             <label for="usuario" class="form-label">Usuario</label>
                             <input
@@ -49,7 +50,7 @@
                                 maxlength="64"
                                 pattern="(?=.*[a-z])(?=.*[A-Z])[A-Za-z0-9]{8,64}"
                                 inputmode="text"
-                                autocomplete="current-password"
+                                autocomplete="off"
                                 required
                             >
                             <div class="form-text">

@@ -36,10 +36,15 @@ final class CustomRangeProvider extends AbstractUtcRangeProvider implements Rang
 
     private function parse(string $value): DateTimeImmutable
     {
-        $date = DateTimeImmutable::createFromFormat(self::FORMAT, $value, $this->utc());
+        if (!preg_match('/\A[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\z/', $value)) {
+            throw new InvalidArgumentException('Invalid UTC date. Expected exactly Y-m-d H:i:s.');
+        }
+
+        $date = DateTimeImmutable::createFromFormat('!' . self::FORMAT, $value, $this->utc());
         $errors = DateTimeImmutable::getLastErrors();
 
-        if ($date === false || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+        if ($date === false || $date->format(self::FORMAT) !== $value
+            || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
             throw new InvalidArgumentException(
                 sprintf('Invalid date "%s". Expected format: %s in UTC.', $value, self::FORMAT)
             );
@@ -72,7 +77,7 @@ final class CustomRangeProvider extends AbstractUtcRangeProvider implements Rang
 
     private function parseSyntheticTimestamp(string $value): string
     {
-        if (!preg_match('/^ts:([+-]?\d+)$/', $value, $matches)) {
+        if (!preg_match('/\Ats:([+-]?[0-9]{1,256})\z/', $value, $matches)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid synthetic timestamp "%s". Expected format: ts:<bigint>.', $value)
             );
