@@ -10,29 +10,103 @@ permissions:
 
 jobs:
   patched-runtime:
-    name: Verify patched PHP runtime (${{ matrix.dockerfile }})
+    name: Patched PHP2Shell runtime and CLI sandbox
     runs-on: ubuntu-24.04
     timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - dockerfile: Dockerfile
-            context: .
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - name: Build application image from latest secure base
-        run: docker build --pull --file "${{ matrix.dockerfile }}" --tag php2shell-runtime:ci "${{ matrix.context }}"
-      - name: Reject PHP builds affected by the October 2026 critical RCEs
+      - name: Validate Docker Compose and version policy
         run: |
-          docker run --rm --entrypoint php php2shell-runtime:ci -r '
+          docker compose config --quiet
+          python3 -m unittest discover -s tests -p 'test_php2shell_security.py' -v
+      - name: Build hardened CLI image from patched PHP base
+        run: docker build --pull --file Dockerfile --tag php2shell-runtime:ci .
+      - name: Reject vulnerable/unsupported PHP and insecure INI settings
+        run: |
+          docker run --rm --network none --entrypoint php php2shell-runtime:ci -r '
           $minimum = ["8.2" => 80235, "8.3" => 80336, "8.4" => 80427, "8.5" => 80512];
           $branch = PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;
           if (!isset($minimum[$branch]) || PHP_VERSION_ID < $minimum[$branch]) {
               fwrite(STDERR, "Unpatched or unsupported PHP: " . PHP_VERSION . PHP_EOL);
               exit(1);
           }
-          echo "Patched PHP runtime: " . PHP_VERSION . PHP_EOL;
+          if (PHP_SAPI !== "cli") {
+              fwrite(STDERR, "Unexpected PHP SAPI: " . PHP_SAPI . PHP_EOL);
+              exit(1);
+          }
+          foreach (["session.upload_progress.enabled", "file_uploads", "expose_php", "display_errors"] as $key) {
+              if (filter_var(ini_get($key), FILTER_VALIDATE_BOOLEAN)) {
+                  fwrite(STDERR, "Unsafe PHP INI directive: " . $key . PHP_EOL);
+                  exit(1);
+              }
+          }
+          echo "Patched PHP CLI " . PHP_VERSION . " with hardening active" . PHP_EOL;
           '
+          test "$(docker image inspect php2shell-runtime:ci --format '{{.Config.User}}')" = 'www-data'
+      - name: Exercise Fibonacci in rootless networkless read-only container
+        run: |
+          docker run --rm --network none --read-only \
+            --cap-drop ALL --security-opt no-new-privileges --pids-limit 64 \
+            php2shell-runtime:ci php PHP/fibonacci.php ts:0 ts:21 \
+            | python3 -c 'import json,sys; x=json.load(sys.stdin); assert x["custom_range"]["fibonacci_timestamps"] == ["0","1","1","2","3","5","8","13","21"]'
+          docker compose build php-cli
+          docker compose run --rm --no-deps php-cli \
+            php PHP/fibonacci.php ts:5 ts:13 \
+            | python3 -c 'import json,sys; x=json.load(sys.stdin); assert x["custom_range"]["fibonacci_timestamps"] == ["5","8","13"]'
+
+  nginx-exposure:
+    name: HTTP cannot execute or disclose PHP source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Validate Nginx config before starting
+        run: |
+          docker run --rm \
+            -v "$PWD/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro" \
+            nginx:stable-alpine nginx -t
+      - name: Start the static-only web server
+        run: |
+          docker run -d --name php2shell-static-ci -p 8087:80 \
+            -v "$PWD:/usr/share/nginx/html:ro" \
+            -v "$PWD/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro" \
+            nginx:stable-alpine
+      - name: Verify only intended HTML/CSS/JS is exposed
+        run: |
+          curl --retry 12 --retry-connrefused --retry-delay 1 -fsS \
+            http://localhost:8087/ > /dev/null
+          for path in \
+            /index.html /PHP/index.html /JAVASCRIPT/index.html \
+            /JAVASCRIPT/fibonacci.js /JAVASCRIPT/styles.css \
+            /CSS/index.html /CSS/style.css; do
+            test "$(curl -sS -o /dev/null -w '%{http_code}' \
+              "http://localhost:8087$path")" = 200
+          done
+          for path in \
+            /PHP/fibonacci.php /PHP/src/autoload.php \
+            /Dockerfile /compose.yaml /docker/php-hardening.ini \
+            /nginx/default.conf /tests/php_test.php \
+            /benchmarks/compare.py /.github/workflows/php-runtime-security.yml \
+            /CSS/style.scss /.gitignore; do
+            test "$(curl -sS -o /dev/null -w '%{http_code}' \
+              "http://localhost:8087$path")" = 404
+          done
+      - name: Reject multipart POST before reaching any PHP interpreter
+        run: |
+          code=$(curl --silent --show-error -o /dev/null -w '%{http_code}' \
+            -F 'PHP_SESSION_UPLOAD_PROGRESS=smoke-test' \
+            -F 'file=@/dev/null;filename=example.txt' \
+            http://localhost:8087/CSS/index.html)
+          test "$code" = 403 -o "$code" = 405
+          curl -sSI http://localhost:8087/JAVASCRIPT/index.html \
+            | grep -qi '^Content-Security-Policy:'
+      - name: Print container logs on failure
+        if: failure()
+        run: docker logs php2shell-static-ci || true
+      - name: Clean up container
+        if: always()
+        run: docker rm -f php2shell-static-ci || true
