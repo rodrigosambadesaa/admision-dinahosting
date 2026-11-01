@@ -29,6 +29,17 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
+      - name: Enforce PHP2Shell patched version in the test matrix
+        run: |
+          php -r '
+          $minimum = ["8.3" => 80336, "8.4" => 80427, "8.5" => 80512];
+          $branch = PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;
+          if (!isset($minimum[$branch]) || PHP_VERSION_ID < $minimum[$branch]) {
+              fwrite(STDERR, "Vulnerable PHP runtime: " . PHP_VERSION . PHP_EOL);
+              exit(1);
+          }
+          echo "Patched runtime: " . PHP_VERSION . PHP_EOL;
+          '
       - name: PHP syntax checks
         run: find PHP tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Functional PHP tests
