@@ -1,0 +1,57 @@
+name: Cross-runtime Fibonacci CPU and peak memory benchmark
+
+on:
+  push:
+    paths:
+      - 'benchmarks/**'
+      - '.github/workflows/fibonacci-benchmark.yml'
+  pull_request:
+    paths:
+      - 'benchmarks/**'
+      - '.github/workflows/fibonacci-benchmark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: PHP vs Node JS vs Django on one runner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout original PHP and browser JavaScript
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          path: original
+      - name: Checkout Django implementation (verified baseline)
+        uses: actions/checkout@v6
+        with:
+          repository: rodrigosambadesaa/admision-dinahosting-django
+          ref: 8756b3f35cabd1e7c527cbcaca13ddaf1c919b20
+          persist-credentials: false
+          path: django
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Install Django
+        run: python -m pip install -r django/requirements.txt
+      - name: Run isolated CPU/RSS benchmark and verify matching results
+        run: |
+          python original/benchmarks/compare.py \
+            --original-dir original --django-dir django --output-dir benchmark-results
+          cat benchmark-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish machine-readable results and summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: fibonacci-cpu-memory-${{ github.run_id }}
+          path: benchmark-results/
+          retention-days: 30
