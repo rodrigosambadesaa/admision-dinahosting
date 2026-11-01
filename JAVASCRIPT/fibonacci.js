@@ -289,7 +289,7 @@ class FibonacciRangeResolver {
 }
 
 function parseUtcDateTime(value) {
-    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
 
     if (!match) {
         throw new Error('Usa el formato "Y-m-d H:i:s".');
@@ -351,7 +351,8 @@ function sanitizeDateInput(value) {
 
     const sanitized = value.trim();
 
-    if (sanitized.length > 260) {
+    if (sanitized.length > 260 || (sanitized.startsWith("ts:")
+        && sanitized.slice(3).replace(/^[+-]/, "").length > 256)) {
         throw new Error("La entrada supera el límite de 256 dígitos sintéticos.");
     }
 
