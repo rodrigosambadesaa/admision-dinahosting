@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!PHP/
+!PHP/**
+!docker/
+!docker/php-hardening.ini
