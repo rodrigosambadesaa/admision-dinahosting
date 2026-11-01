@@ -9,7 +9,7 @@ services:
     command: php PHP/fibonacci.php "2026-06-01 00:00:00" "2026-06-30 23:59:59"
 
   web:
-    image: nginx:1.27-alpine
+    image: nginx:stable-alpine
     ports:
       - "${WEB_PORT:-8087}:80"
     volumes:

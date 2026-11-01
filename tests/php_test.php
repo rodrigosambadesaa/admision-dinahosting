@@ -46,6 +46,8 @@ $cases = [
             ->add(BigInteger::fromInt(1)), 'large carry');
         same('-1', (string) BigInteger::fromString('-3')->add(BigInteger::fromInt(2)), 'signed sum');
         same(0, BigInteger::fromString('-000')->compare(BigInteger::fromInt(0)), 'zero comparison');
+        check(BigInteger::fromString(str_repeat('9', 80) . '9')
+            ->compare(BigInteger::fromString(str_repeat('9', 80) . '8')) > 0, 'exact large comparison');
     },
     'Fibonacci sequences and ranges' => static function (): void {
         $generator = new FibonacciSequenceGenerator();

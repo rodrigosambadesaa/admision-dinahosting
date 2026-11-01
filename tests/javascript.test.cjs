@@ -17,6 +17,7 @@ test("BigInteger handles signed values and arbitrary-precision carry", () => {
     assert.throws(() => BigInteger.fromNumber(Number.MAX_SAFE_INTEGER + 1));
     assert.throws(() => BigInteger.fromString("1e30"));
     assert.throws(() => BigInteger.fromString("9".repeat(257)));
+    assert.equal(BigInteger.fromString("9".repeat(80) + "9").compare(BigInteger.fromString("9".repeat(80) + "8")), 1);
 });
 
 test("Fibonacci sequences, inclusive bounds and normalized reversed ranges", () => {

@@ -120,7 +120,7 @@ final class BigInteger
             return $lengthComparison;
         }
 
-        return $left <=> $right;
+        return strcmp($left, $right);
     }
 
     private static function addAbsolute(string $left, string $right): string
