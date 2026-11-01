@@ -113,3 +113,30 @@ En el formulario puedes introducir:
 ### CSS
 
 Abre [CSS/index.html](CSS/index.html) en navegador o usa Docker.
+
+
+## PHP2Shell (octubre de 2026)
+
+**PHP2Shell no es un fallo del algoritmo de Fibonacci**: son errores de seguridad del propio intérprete PHP. CVE-2026-109618 y CVE-2026-109619 pueden provocar corrupción de memoria y ejecución remota de código en servicios PHP vulnerables. Véase el [aviso oficial de PHP](https://www.php.net/archive/2026.php#2026-10-21-5).
+
+La **solución es actualizar el runtime PHP**. Versiones mínimas publicadas el 21 de octubre de 2026: 8.2.35, 8.3.36, 8.4.27 y 8.5.12; no deben usarse ramas antiguas sin soporte.
+
+En este repositorio se aplican cinco garantías:
+
+1. **PHP 8.3.36 CLI corregido.** Docker utiliza explícitamente el parche correspondiente; Actions compila con --pull y compara la versión real de la imagen frente a las versiones mínimas seguras.
+2. **PHP no es accesible desde HTTP.** El servidor web usa Nginx únicamente para los siete recursos HTML, JavaScript y CSS publicados por los ejercicios. No hay Apache/mod_php, php-fpm, php-cgi ni configuración FastCGI. El resto de las rutas, incluidos los archivos fuente PHP, devuelven 404, y las peticiones multipart POST no se procesan.
+3. **Contenedor PHP aislado.** Solo copia el directorio PHP y su configuración, ejecuta como usuario no privilegiado y el servicio Compose no dispone de red, monta el sistema de archivos como solo lectura, elimina capacidades, prohíbe escalada de privilegios y limita los procesos.
+4. **Configuración PHP defensiva.** El archivo docker/php-hardening.ini desactiva session.upload_progress.enabled, file_uploads, expose_php y display_errors, cargándolo antes del inicio del intérprete. No sustituye los parches y no cubre por sí solo todas las vías de explotación.
+5. **Verificación continua.** GitHub Actions comprueba la versión y las opciones de PHP efectivamente cargadas, la ejecución del CLI en el sandbox, el bloqueo HTTP de código fuente, el rechazo multipart y el funcionamiento de los archivos públicos.
+
+Tras actualizar la aplicación, reconstruye la imagen PHP; el código ya se incluye en la imagen y no se monta desde el host:
+
+~~~bash
+docker compose build --pull php-cli
+docker compose run --rm php-cli php PHP/fibonacci.php "ts:0" "ts:21"
+docker compose up -d web
+~~~
+
+Si despliegas una instancia diferente de PHP como servidor web, **debes actualizarla y reiniciar sus procesos** (PHP-FPM, Apache o similar). Comprueba la versión expuesta en el servidor y no solo la versión del ejecutable CLI. La mitigación adicional de desactivar session.upload_progress.enabled a nivel del servidor antes del análisis de la petición no sustituye el parche; tampoco lo hace un WAF.
+
+El memory_limit=128M del CLI limita recursos **después de aplicar el parche**. No constituye una mitigación para CVE-2026-109618 en un intérprete vulnerable: un límite finito de memoria puede incluso contribuir a activar la ruta defectuosa.
