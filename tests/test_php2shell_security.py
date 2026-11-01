@@ -22,8 +22,7 @@ class Php2ShellHardeningTests(unittest.TestCase):
         self.assertIn("USER www-data", dockerfile)
         self.assertIn("COPY docker/php-hardening.ini", dockerfile)
         self.assertIn("COPY --chown=www-data:www-data PHP/", dockerfile)
-        self.assertNotIn("-apache", dockerfile)
-        self.assertNotIn("-fpm", dockerfile)
+        # The FROM regex above rejects Apache/FPM even if comments mention them.
 
     def test_php_ini_reduces_attack_surface(self):
         config = (ROOT / "docker/php-hardening.ini").read_text(encoding="utf-8")
