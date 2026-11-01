@@ -13,7 +13,7 @@ class BigInteger {
     }
 
     static fromNumber(value) {
-        if (!Number.isInteger(value)) {
+        if (!Number.isSafeInteger(value)) {
             throw new Error("Solo se aceptan enteros seguros.");
         }
 
@@ -23,6 +23,10 @@ class BigInteger {
     static fromString(value) {
         if (typeof value !== "string" || !/^[+-]?\d+$/.test(value)) {
             throw new Error("Valor BigInteger no válido.");
+        }
+
+        if (value.replace(/^[+-]/, "").length > 256) {
+            throw new Error("El entero sintético supera los 256 dígitos permitidos.");
         }
 
         const normalized = value.replace(/^[+]/, "");
@@ -293,7 +297,10 @@ function parseUtcDateTime(value) {
 
     const parts = match.slice(1).map(Number);
     const [year, month, day, hour, minute, second] = parts;
-    const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+    const date = new Date(0);
+    // Date.UTC(0..99, ...) convierte los años 0000-0099 en 1900-1999.
+    date.setUTCFullYear(year, month - 1, day);
+    date.setUTCHours(hour, minute, second, 0);
 
     if (
         date.getUTCFullYear() !== year ||
@@ -343,6 +350,10 @@ function sanitizeDateInput(value) {
     }
 
     const sanitized = value.trim();
+
+    if (sanitized.length > 260) {
+        throw new Error("La entrada supera el límite de 256 dígitos sintéticos.");
+    }
 
     if (sanitized === "") {
         throw new Error("La entrada recibida no es válida.");
@@ -401,6 +412,7 @@ function renderResults(container, sections) {
     }
 }
 
+if (typeof document !== "undefined") {
 const form = document.getElementById("fibonacci-form");
 const errorBox = document.getElementById("error-message");
 const results = document.getElementById("results");
@@ -437,3 +449,14 @@ form.addEventListener("submit", (event) => {
         errorBox.textContent = error instanceof Error ? error.message : "Se ha producido un error no esperado.";
     }
 });
+
+}
+
+// Exposición exclusiva para pruebas Node.js; en navegador se conserva el script clásico.
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+        BigInteger, FibonacciSequenceGenerator, DateRange,
+        CurrentMonthRangeProvider, CurrentYearRangeProvider, CustomRangeProvider,
+        FibonacciRangeResolver, parseUtcDateTime, sanitizeDateInput, parseRangeBoundary
+    };
+}
