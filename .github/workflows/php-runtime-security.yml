@@ -26,7 +26,7 @@ jobs:
       - name: Reject vulnerable/unsupported PHP and insecure INI settings
         run: |
           docker run --rm --network none --entrypoint php php2shell-runtime:ci -r '
-          $minimum = ["8.2" => 80235, "8.3" => 80336, "8.4" => 80427, "8.5" => 80512];
+          $minimum = ["8.2" => 80236, "8.3" => 80337, "8.4" => 80428, "8.5" => 80513, "8.6" => 80600];
           $branch = PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;
           if (!isset($minimum[$branch]) || PHP_VERSION_ID < $minimum[$branch]) {
               fwrite(STDERR, "Unpatched or unsupported PHP: " . PHP_VERSION . PHP_EOL);
