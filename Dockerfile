@@ -1,6 +1,6 @@
 # PHP 8.3.36 fixes PHP2Shell CVE-2026-109618 / CVE-2026-109619.
 # CLI only: do not expose this image as php-fpm, mod_php or php-cgi.
-FROM php:8.3.36-cli-alpine
+FROM php:8.3.37-cli-alpine
 
 WORKDIR /workspace
 
