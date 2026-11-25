@@ -16,7 +16,7 @@ class Php2ShellHardeningTests(unittest.TestCase):
         match = re.search(r"(?m)^FROM php:(\d+)\.(\d+)\.(\d+)-cli-alpine\s*$", dockerfile)
         self.assertIsNotNone(match, "Only an explicitly patched PHP CLI tag is allowed")
         version = tuple(int(i) for i in match.groups())
-        minimum = {(8, 2): 35, (8, 3): 36, (8, 4): 27, (8, 5): 12}
+        minimum = {(8, 2): 36, (8, 3): 37, (8, 4): 28, (8, 5): 13, (8, 6): 0}
         self.assertIn(version[:2], minimum, "Unknown PHP branch needs a security review")
         self.assertGreaterEqual(version[2], minimum[version[:2]])
         self.assertIn("USER www-data", dockerfile)
